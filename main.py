@@ -5,13 +5,10 @@ import json
 
 
 class APP:
-    def __init__(self, username, password):  # 初始化
+    def __init__(self):  # 初始化
         self.session = requests.session()
         self.url = 'http://qzjwxt.kjxy.nchu.edu.cn:800'
         self.courses = {}
-
-        self.username = str(username)
-        self.password = str(password)
 
         self.headers = {
             'Host': 'qzjwxt.kjxy.nchu.edu.cn:800',
@@ -20,19 +17,18 @@ class APP:
             'Referer': 'http://qzjwxt.kjxy.nchu.edu.cn:800/jsxsd/',
         }
 
-    def session_login(self):  # 登入平台
+        self.login()
+
+    def login(self):  # 登入平台
         url_login = f'{self.url}/jsxsd/xk/LoginToXk'
-
-        username = self.username
-        password = self.password
-
         data = {
             'userAccount': '',
             'userPassword': '',
-            'encoded': base64.b64encode(username.encode()).decode() + '%%%' + base64.b64encode(password.encode()).decode(),
+            'encoded': base64.b64encode(str(username).encode()).decode() + '%%%' + base64.b64encode(str(password).encode()).decode(),
         }
 
         self.session.post(url_login, headers=self.headers, data=data)
+        self.get_courses()
 
     def get_courses(self):  # 获取课表
         url_xklist = f'{self.url}/jsxsd/xsxk/xklc_list'  # 获取选课列表
@@ -44,7 +40,8 @@ class APP:
             print('[+] 获取选课链接成功')
 
         except:
-            print('[-] 获取选课链接失败，请检查账号密码是否错误，若使用正确密码出现此问题，则为正则匹配失败，请手动修改匹配代码')
+            print(
+                '[-] 获取选课链接失败，请检查账号密码是否错误，若使用正确密码出现此问题，则为正则匹配失败，请手动修改匹配代码')
             exit(0)
 
         # 只有登入选课界面后，jsxsd/xsxkkc/xsxkBxxk 访问才有课程表，否则视为登入异常
@@ -90,22 +87,25 @@ class APP:
         }
 
         response = self.session.post(url_xsxk, headers=self.headers, data=data).text
-        courses = json.loads(response)
+        courses_xsxk = json.loads(response)
 
         try:
-            for item in courses['aaData']:
+            for item in courses_xsxk['aaData']:
                 if item['fzmc'] not in self.courses.keys():
                     self.courses[item['fzmc']] = [item['jx02id'], item['jx0404id']]
-            print('[+] 载入课表成功 \n课表信息：', self.courses)
+            print('[+] 载入课表成功  \n课表信息：', self.courses)
         except:
-            print('[-] 获取课表失败，可能为字典键值与实际不同，请手动修改代码，返回信息：', courses['aaData'])
+            print('[-] 获取课表失败，可能为字典键值与实际不同，请手动修改代码，返回信息：', courses_xsxk['aaData'])
             exit(0)
 
-    def course_select(self, courses):  # 抢课函数
+        self.course_select()
+
+    def course_select(self):  # 抢课函数
         if not len(self.courses) and not len(courses):  # 判断课表与选课列表都不为空
             print('[-] 请输入至少一个选择的课程，如果已输入课程，则可能课表为空')
             exit(0)
 
+        print('[+] 正在抢课中')
         while True:
             for item1 in courses:
                 for item2 in self.courses.keys():
@@ -118,7 +118,12 @@ class APP:
                             return
 
 
-app = APP('username', 'password')
-app.session_login()
-app.get_courses()
-app.course_select(['足球', '健美操'])
+username = input('请输入学号：').strip()
+password = input('请输入密码：').strip()
+
+courses = input('请输入课程名称：（多个课程以空格\' \'隔开) :').strip().split(' ')
+if '' in courses:
+    print('[-] 请检查输入课程名称', courses)
+    exit(0)
+
+app = APP()
