@@ -121,7 +121,7 @@ class APP:
 username = input('请输入学号：').strip()
 password = input('请输入密码：').strip()
 
-courses = input('请输入课程名称：（多个课程请以空格隔开) :').strip().split(' ')
+courses = input('请输入课程名称（多个课程请以空格隔开) :').strip().split(' ')
 if '' in courses:
     print('[-] 请检查输入课程名称', courses)
     exit(0)
