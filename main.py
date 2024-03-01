@@ -96,7 +96,7 @@ class APP:
             for item in courses['aaData']:
                 if item['fzmc'] not in self.courses.keys():
                     self.courses[item['fzmc']] = [item['jx02id'], item['jx0404id']]
-            print('[+] 载入课表成功 课表信息：', self.courses)
+            print('[+] 载入课表成功 \n课表信息：', self.courses)
         except:
             print('[-] 获取课表失败，可能为字典键值与实际不同，请手动修改代码，返回信息：', courses['aaData'])
             exit(0)
